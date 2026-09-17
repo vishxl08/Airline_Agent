@@ -1,113 +1,141 @@
-# Airline Disruption — Customer-Facing Resolution Agent
+# Airline Disruption Customer-Facing Resolution Agent
 
-Assignment 3 submission. Built with **FastAPI**, **Deterministic Python Policy Engine**, **Groq API**, and a modern **HTML5/CSS3 Dashboard**.
+Assignment 3 Submission — Customer Resolution & Policy Guardrail System
 
----
-
-## 🏛️ System Architecture
-
-Policy math is **never** left to the language model. Python computes exact customer entitlements and escalation triggers deterministically from the assignment data pack. Groq is used solely for natural language response generation and empathetic tone formatting.
-
-```
-+---------------------+     HTTP POST     +----------------------------------+
-| Customer / Tester   | ----------------> | FastAPI Server (app.py)          |
-| Web UI (index.html) |                   +----------------------------------+
-+---------------------+                                    |
-                                                           | 1. Intent & PNR Extract
-                                                           v
-                                          +----------------------------------+
-                                          | Policy Engine (policy_engine.py) |
-                                          | • Computes Leg Entitlements      |
-                                          | • Detects Prohibited Actions     |
-                                          +----------------------------------+
-                                                           |
-                                                           | 2. Grounded Facts Injected
-                                                           v
-                                          +----------------------------------+
-                                          | Groq LLM (Tone & Reply Only)     |
-                                          +----------------------------------+
-                                                           |
-                                                           | 3. Action Audit Logged
-                                                           v
-                                          +----------------------------------+
-                                          | SQLite DB (conversations.db)     |
-                                          +----------------------------------+
-```
+This project implements an automated customer resolution agent for airline flight disruptions. The system decouples policy calculation from natural language response generation: Python logic computes entitlements and detects prohibited actions deterministically, while the Groq LLM standardizes customer communications.
 
 ---
 
-## ⚡ Quick Start & Local Run
+## Architecture Diagram
+
+```
++-------------------+           HTTP POST          +-----------------------+
+|  Customer / UI    | ---------------------------> | FastAPI Server        |
+|  (static/index)   | <--------------------------- | (app.py)              |
++-------------------+      JSON Response & Badges  +-----------------------+
+                                                               |
+                                                   1. Extract Intent & PNR
+                                                               v
+                                                   +-----------------------+
+                                                   | Policy Engine         |
+                                                   | (policy_engine.py)    |
+                                                   +-----------------------+
+                                                               |
+                                                   2. Computed Entitlements &
+                                                      Escalation Triggers
+                                                               v
+                                                   +-----------------------+
+                                                   | Groq LLM API          |
+                                                   | (Tone & Reply Only)   |
+                                                   +-----------------------+
+                                                               |
+                                                   3. Log Turn Record
+                                                               v
+                                                   +-----------------------+
+                                                   | SQLite Audit Log      |
+                                                   | (conversations.db)    |
+                                                   +-----------------------+
+```
+
+## System Overview
+
+- **Deterministic Policy Math**: Entitlements, delay thresholds, refund eligibility, and fare difference caps are processed entirely in Python (`policy_engine.py`).
+- **Grounded LLM Generation**: System prompts ingest live case facts from `data_pack.py`. The LLM cannot approve out-of-policy items or hallucinate unauthorized compensation.
+- **Prohibited Action Escalation**: Automatic detection for fare waivers exceeding INR 1,500, unapproved upgrades, full-night hotel stays, non-original refund methods, and legal or formal complaints.
+- **Audit Logging**: Per-turn audit trail recorded in an SQLite database storing session IDs, timestamps, role responses, applied policy actions, and escalation statuses.
+
+---
+
+## Technical Stack
+
+- **Backend Framework**: Python 3.10+, FastAPI, Uvicorn, Requests, SQLite3
+- **Policy Engine**: Deterministic Python regex and rule evaluation
+- **LLM Integration**: Groq Chat API (`qwen/qwen3.8-27b`, `openai/gpt-oss-20b`, `llama-3.3-70b-versatile`)
+- **Frontend Dashboard**: HTML5, Vanilla CSS3 (Custom Responsive Layout), Vanilla JavaScript ES6
+
+---
+
+## Setup and Local Execution
 
 ### 1. Environment Setup
+
 ```bash
 python -m venv myenv
-# Windows:
+
+# Windows (PowerShell):
 .\myenv\Scripts\activate
-# macOS/Linux:
+
+# macOS / Linux:
 source myenv/bin/activate
 
 pip install -r requirements.txt
 ```
 
-### 2. Configure API Key
-Copy `.env.example` to `.env` and add your free Groq API key:
+### 2. Configuration
+
+Create a `.env` file in the root directory (refer to `.env.example`):
+
 ```env
-GROQ_API_KEY=gsk_your_groq_api_key_here
+GROQ_API_KEY=your_groq_api_key_here
 ```
 
-### 3. Run Application Server
+### 3. Running the Server
+
 ```bash
 uvicorn app:app --reload --port 8000
 ```
-Open **[http://localhost:8000](http://localhost:8000)** in your browser.
+
+Access the interface in your browser at `http://localhost:8000`.
 
 ---
 
-## 🧪 Automated Testing
+## Test Execution
 
-Run the unit test suite and scenario integration test suite:
+Run policy engine unit tests and end-to-end scenario tests:
+
 ```bash
+# Run unit tests
 python test_policy_engine.py
+
+# Run scenario integration tests
 python test_scenarios.py
 ```
 
 ---
 
-## 📋 Assignment Scenario Test Matrix
+## Assignment Scenario Coverage
 
-| Scenario | Customer & PNR | Input Prompt | Expected Outcome |
+| Scenario | Customer & PNR | Issue | Policy Entitlement & Action |
 |---|---|---|---|
-| **Scenario 1** | Priya Nair (`SK4821X`) | SK-204 cancelled, nobody told her | Free rebook within 24h **or** full refund. Gold = priority seats only. |
-| **Scenario 1 Follow-up** | Priya Nair (`SK4821X`) | Wants full cash refund **plus** free upgrade to business class on return flight | **Initiate refund**. **Refuse & escalate** business upgrade (prohibited action). |
-| **Scenario 2** | Arvind Kulkarni (`TR1190B`) | SK-118 delayed 4h; wants hotel for missing meeting | Issue meal voucher + lounge. **Refuse hotel** (hotel requires >5h delay). Escalate exception. |
-| **Scenario 3** | Meher Kaur (`WL7742`) | SK-305 delayed 6h; wants full night hotel + rebook on higher fare flight (₹2,000 diff) | Issue meal + lounge + hotel **for delayed hours only**. **Refuse full night**. **Escalate ₹2,000 fare waiver** (> ₹1,500 cap). |
+| **Scenario 1** | Priya Nair (`SK4821X`) | Flight SK-204 Cancelled | Free rebooking within 24h OR full refund. Gold tier priority seating applied. |
+| **Scenario 1 (Follow-up)** | Priya Nair (`SK4821X`) | Demands refund + business class upgrade | Refund processed. Business class upgrade refused and escalated. |
+| **Scenario 2** | Arvind Kulkarni (`TR1190B`) | Flight SK-118 Delayed 4h | Meal voucher + lounge access issued. Hotel stay refused (requires >5h delay) and escalated. |
+| **Scenario 3** | Meher Kaur (`WL7742`) | Flight SK-305 Delayed 6h | Meal + lounge + hotel (delayed hours only) issued. Full-night stay refused. INR 2,000 fare difference waiver escalated (> INR 1,500 cap). |
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
-├── data_pack.py          # Grounding customer profiles, booking data, service rules
-├── policy_engine.py      # Deterministic entitlements & prohibited action detection engine
-├── app.py                # FastAPI backend endpoints (/chat, /health, /history, /reset)
-├── static/
-│   └── index.html        # Interactive UI dashboard with live customer cards & status tags
-├── test_policy_engine.py # Unit tests for policy rules & regexes
-├── test_scenarios.py     # End-to-end integration tests for Scenarios 1, 2, and 3
-├── requirements.txt      # Python dependencies
+.
+├── app.py                # FastAPI endpoints (/chat, /health, /history, /reset)
+├── data_pack.py          # Customer profiles, booking records, and service rules
+├── policy_engine.py      # Deterministic entitlements and escalation detector
+├── test_policy_engine.py # Unit test suite
+├── test_scenarios.py     # Scenario integration test suite
+├── requirements.txt      # Project dependencies
+├── README.md             # Documentation
 ├── .env.example          # Environment variables template
-└── README.md             # Project documentation
+└── static/
+    └── index.html        # Responsive resolution dashboard UI
 ```
 
 ---
 
-## 📄 Presentation Deck (10-Slide PPT Content)
-A complete slide-by-slide content outline for the presentation submission is provided in [presentation_slides.md](presentation_slides.md) (or generated in the assignment artifacts).
+## Deployment Instructions
 
----
+To deploy to hosting platforms like Railway or Render:
 
-## 📦 Mandatory Submission Checklist
-- [x] **Clean GitHub Repository**: Code pushed without `.env` or `conversations.db` (gitignored).
-- [x] **Architecture Diagram**: Documented above and in presentation deck.
-- [x] **Demo Video**: Uploaded to Google Drive with public/open access settings.
-- [x] **10-Slide PPT Presentation**: Slide deck content prepared and ready.
+1. Build Command: `pip install -r requirements.txt`
+2. Start Command: `uvicorn app:app --host 0.0.0.0 --port $PORT`
+3. Environment Variable: Set `GROQ_API_KEY` in deployment settings.
