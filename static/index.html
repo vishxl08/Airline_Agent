@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SkyLine Resolutions — Customer Disruption AI Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-main: #0b0f19;
+    --bg-card: #131b2e;
+    --bg-input: #0a0e17;
+    --border: #232d45;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --text-primary: #f1f5f9;
+    --text-muted: #94a3b8;
+    --user-msg: #1d4ed8;
+    --agent-msg: #1e293b;
+    --danger: #ef4444;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --gold: #eab308;
+    --silver: #94a3b8;
+    --platinum: #a855f7;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Outfit', -apple-system, sans-serif; }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-primary);
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+  }
+
+  .app-container {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+  }
+
+  /* Sidebar styling */
+  .sidebar {
+    width: 340px;
+    background: var(--bg-card);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    gap: 20px;
+    overflow-y: auto;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .brand-icon {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+
+  .brand-title h1 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .brand-title p {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+
+  .card {
+    background: #0d1322;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+  }
+
+  .customer-profile {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .customer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .customer-name {
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .tier-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .tier-gold { background: rgba(234, 179, 8, 0.15); color: var(--gold); border: 1px solid var(--gold); }
+  .tier-silver { background: rgba(148, 163, 184, 0.15); color: var(--silver); border: 1px solid var(--silver); }
+  .tier-platinum { background: rgba(168, 85, 247, 0.15); color: var(--platinum); border: 1px solid var(--platinum); }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .info-value { color: var(--text-primary); font-weight: 500; }
+
+  .entitlement-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  .entitlement-item {
+    font-size: 11px;
+    padding: 6px 10px;
+    background: #172033;
+    border-radius: 6px;
+    color: #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .scenario-btn {
+    width: 100%;
+    text-align: left;
+    padding: 10px 12px;
+    background: #111827;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-muted);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-bottom: 8px;
+  }
+
+  .scenario-btn:hover {
+    background: #1d283a;
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  .scenario-btn strong {
+    display: block;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+    font-size: 12px;
+  }
+
+  /* Main Chat Area */
+  .chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-main);
+  }
+
+  header.chat-header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-card);
+  }
+
+  .header-info h2 { font-size: 16px; font-weight: 600; }
+  .header-info p { font-size: 12px; color: var(--text-muted); }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-ghost:hover { color: #fff; border-color: var(--accent); }
+
+  .messages-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .msg-wrapper {
+    display: flex;
+    flex-direction: column;
+    max-width: 80%;
+  }
+
+  .msg-wrapper.user { align-self: flex-end; }
+  .msg-wrapper.agent { align-self: flex-start; }
+
+  .msg-bubble {
+    padding: 12px 16px;
+    border-radius: 14px;
+    font-size: 14px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+  }
+
+  .user .msg-bubble {
+    background: var(--user-msg);
+    color: white;
+    border-bottom-right-radius: 4px;
+  }
+
+  .agent .msg-bubble {
+    background: var(--agent-msg);
+    color: var(--text-primary);
+    border-bottom-left-radius: 4px;
+    border: 1px solid #334155;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin-top: 8px;
+    align-self: flex-start;
+  }
+  .status-badge.ok { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid var(--success); }
+  .status-badge.escalated { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid var(--danger); }
+
+  .input-bar {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    background: var(--bg-card);
+    display: flex;
+    gap: 12px;
+  }
+
+  .input-bar input {
+    flex: 1;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    padding: 14px 18px;
+    border-radius: 10px;
+    color: white;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .input-bar input:focus { border-color: var(--accent); }
+
+  .btn-send {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: white;
+    font-weight: 600;
+    border: none;
+    padding: 0 24px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: opacity 0.2s;
+  }
+  .btn-send:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-container">
+  <!-- Left Sidebar: Customer & Entitlement Context -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">✈️</div>
+      <div class="brand-title">
+        <h1>SkyLine Agent</h1>
+        <p>Airline Disruption Resolution</p>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Active Customer Context</div>
+      <div class="card customer-profile" id="customerCard">
+        <p style="font-size:12px; color:var(--text-muted); text-align:center;">Select or mention a customer PNR to load live details.</p>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">Assignment Scenarios</div>
+      <button class="scenario-btn" onclick="runScenario('Priya1')">
+        <strong>1. Priya Nair (Cancelled)</strong>
+        PNR: SK4821X • SK-204 Delhi → Goa
+      </button>
+      <button class="scenario-btn" onclick="runScenario('Priya2')">
+        <strong>1. Priya Follow-Up</strong>
+        Refund + Business Upgrade ask
+      </button>
+      <button class="scenario-btn" onclick="runScenario('Arvind')">
+        <strong>2. Arvind Kulkarni (4h Delay)</strong>
+        PNR: TR1190B • SK-118 Mumbai → BLR
+      </button>
+      <button class="scenario-btn" onclick="runScenario('Meher')">
+        <strong>3. Meher Kaur (6h Delay)</strong>
+        PNR: WL7742 • SK-305 Delhi → HYD
+      </button>
+    </div>
+  </aside>
+
+  <!-- Right Panel: Main Chat Workspace -->
+  <main class="chat-area">
+    <header class="chat-header">
+      <div class="header-info">
+        <h2>Customer Resolution Console</h2>
+        <p>Policy Engine: Active • Grounded in Assignment 3 Rules</p>
+      </div>
+      <button class="btn-ghost" onclick="resetChat()">+ New Session</button>
+    </header>
+
+    <div class="messages-container" id="chat"></div>
+
+    <form class="input-bar" id="chatForm">
+      <input type="text" id="userInput" placeholder="Type a message or PNR (e.g. SK4821X)..." autocomplete="off" />
+      <button type="submit" class="btn-send" id="sendBtn">Send</button>
+    </form>
+  </main>
+</div>
+
+<script>
+let sessionId = null;
+const chatEl = document.getElementById('chat');
+const formEl = document.getElementById('chatForm');
+const inputEl = document.getElementById('userInput');
+const sendBtn = document.getElementById('sendBtn');
+const customerCard = document.getElementById('customerCard');
+
+const SCENARIO_PROMPTS = {
+  Priya1: { pnr: 'SK4821X', msg: "Hi, my PNR is SK4821X. My flight SK-204 from Delhi to Goa is cancelled and nobody told me!" },
+  Priya2: { pnr: 'SK4821X', msg: "This is unacceptable. I am furious and want a full cash refund PLUS a free upgrade to business class on my return flight for the trouble." },
+  Arvind: { pnr: 'TR1190B', msg: "My PNR is TR1190B. Flight SK-118 is delayed 4 hours and I am missing a connecting meeting. I want hotel accommodation since it's such a long delay." },
+  Meher:  { pnr: 'WL7742',  msg: "PNR WL7742. SK-305 is delayed 6 hours. I want a full night hotel stay and I also want to move to a higher-fare flight. The fare difference is ₹2,000." }
+};
+
+function renderBubble(role, text, actionTaken, escalated) {
+  const wrap = document.createElement('div');
+  wrap.className = `msg-wrapper ${role}`;
+
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
+  bubble.textContent = text;
+  wrap.appendChild(bubble);
+
+  if (actionTaken && role === 'agent') {
+    const badge = document.createElement('div');
+    badge.className = `status-badge ${escalated ? 'escalated' : 'ok'}`;
+    badge.innerHTML = escalated 
+      ? `🚨 ESCALATED: ${actionTaken}`
+      : `✅ APPLIED: ${actionTaken}`;
+    wrap.appendChild(badge);
+  }
+
+  chatEl.appendChild(wrap);
+  chatEl.scrollTop = chatEl.scrollHeight;
+}
+
+function updateCustomerCard(customer, pnr, legs, entitlement) {
+  if (!customer) return;
+
+  const tierClass = `tier-${(customer.tier || '').toLowerCase()}`;
+  let legInfo = legs && legs[0] ? `${legs[0].flight} (${legs[0].route}) — ${legs[0].status.toUpperCase()}` : 'N/A';
+  if (legs && legs[0] && legs[0].delay_hours) legInfo += ` (${legs[0].delay_hours}h delay)`;
+
+  let itemsHtml = '';
+  if (entitlement && entitlement.entitled) {
+    itemsHtml = entitlement.entitled.map(e => `<div class="entitlement-item">✓ ${e}</div>`).join('');
+  }
+
+  customerCard.innerHTML = `
+    <div class="customer-header">
+      <span class="customer-name">${customer.name}</span>
+      <span class="tier-badge ${tierClass}">${customer.tier}</span>
+    </div>
+    <div class="info-row"><span>PNR:</span><span class="info-value">${pnr}</span></div>
+    <div class="info-row"><span>Active Flight:</span><span class="info-value" style="font-size:11px;">${legInfo}</span></div>
+    <div class="info-row"><span>12-Mo Flights:</span><span class="info-value">${customer.flights_last_12mo}</span></div>
+    <div class="info-row"><span>Prior Complaints:</span><span class="info-value">${customer.prior_complaints.length}</span></div>
+    <div style="margin-top:8px;">
+      <div style="font-size:11px; font-weight:600; color:var(--text-muted); margin-bottom:4px;">Computed Entitlements:</div>
+      <div class="entitlement-list">${itemsHtml || '<div class="entitlement-item">Standard policy</div>'}</div>
+    </div>
+  `;
+}
+
+async function sendMsg(message, forceReset = false) {
+  if (!message.trim() || sendBtn.disabled) return;
+
+  if (forceReset) {
+    await resetChat(false);
+  }
+
+  renderBubble('user', message);
+  sendBtn.disabled = true;
+
+  try {
+    const res = await fetch('/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ session_id: sessionId, message })
+    });
+    const data = await res.json();
+    sessionId = data.session_id;
+
+    renderBubble('agent', data.reply, data.action_taken, data.escalated);
+    if (data.customer) {
+      updateCustomerCard(data.customer, data.pnr, data.legs, data.entitlement);
+    }
+  } catch (err) {
+    renderBubble('agent', 'Error connecting to server. Please check backend execution.');
+  } finally {
+    sendBtn.disabled = false;
+    inputEl.focus();
+  }
+}
+
+async function resetChat(showWelcome = true) {
+  if (sessionId) {
+    try {
+      await fetch('/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ session_id: sessionId, message: '' })
+      });
+    } catch(e){}
+  }
+  sessionId = null;
+  chatEl.innerHTML = '';
+  customerCard.innerHTML = `<p style="font-size:12px; color:var(--text-muted); text-align:center;">Select or mention a customer PNR to load live details.</p>`;
+  if (showWelcome) {
+    renderBubble('agent', 'Welcome to SkyLine Disruption Support! Please mention a booking PNR (e.g. SK4821X, TR1190B, WL7742) or click a scenario from the sidebar to begin.');
+  }
+}
+
+function runScenario(key) {
+  const s = SCENARIO_PROMPTS[key];
+  if (s) {
+    sendMsg(s.msg, key !== 'Priya2');
+  }
+}
+
+formEl.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const text = inputEl.value;
+  inputEl.value = '';
+  sendMsg(text);
+});
+
+resetChat(true);
+</script>
+</body>
+</html>
