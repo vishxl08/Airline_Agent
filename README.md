@@ -8,7 +8,7 @@ This project implements an automated customer resolution agent for airline fligh
 
 ## System Architecture Diagram
 
-### Flowchart Architecture (GitHub Interactive View)
+### Flowchart Architecture 
 
 ```mermaid
 flowchart TD
